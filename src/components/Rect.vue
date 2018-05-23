@@ -2,9 +2,13 @@
   <div :class="{ item: true, selected }" :style="transpiledStyle" @click.stop.prevent @mousedown="onMousedown">
     <div v-if="selected" class="handles">
       <Dragable class="top" @move="(x, y) => { move(0, y); resize(0, -y) }" />
+      <Dragable class="top-right" @move="(x, y) => { move(0, y); resize(x, -y) }" />
       <Dragable class="right" @move="(x, y) => { move(0, 0); resize(x, 0) }" />
-      <Dragable class="left" @move="(x, y) => { move(x, 0); resize(-x, 0) }" />
+      <Dragable class="bottom-right" @move="(x, y) => { move(0, 0); resize(x, y) }" />
       <Dragable class="bottom" @move="(x, y) => { move(0, 0); resize(0, y) }" />
+      <Dragable class="bottom-left" @move="(x, y) => { move(x, 0); resize(-x, y) }" />
+      <Dragable class="left" @move="(x, y) => { move(x, 0); resize(-x, 0) }" />
+      <Dragable class="top-left" @move="(x, y) => { move(x, y); resize(-x, -y) }" />
     </div>
   </div>
 </template>
@@ -83,17 +87,33 @@ export default {
             top: -7px;
             left: calc(50% - 5px);
         }
+        &.top-right {
+            top: -7px;
+            right: -7px;
+        }
         &.right {
             right: -7px;
             top: calc(50% - 5px);
+        }
+        &.bottom-right {
+            bottom: -7px;
+            right: -7px;
         }
         &.bottom {
             bottom: -7px;
             left: calc(50% - 5px);
         }
+        &.bottom-left {
+            bottom: -7px;
+            left: -7px;
+        }
         &.left {
             left: -7px;
             top: calc(50% - 5px);
+        }
+        &.top-left {
+            top: -7px;
+            left: -7px;
         }
     }
 }
