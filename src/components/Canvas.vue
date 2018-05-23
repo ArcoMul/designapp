@@ -34,6 +34,12 @@ export default {
       selected: null,
     };
   },
+  created: function() {
+    window.addEventListener('keydown',this.onKeydown);
+  },
+  destroyed: function() {
+    window.removeEventListener('keydown', this.onKeydown);
+  },
   methods: {
     addDiv() {
       this.items.push({
@@ -80,6 +86,12 @@ export default {
       this.moveLastX = ev.clientX;
       this.moveLastY = ev.clientY;
     },
+    onKeydown(ev) {
+      if (ev.key === 'Delete') {
+        const index = this.items.indexOf(this.selected);
+        this.items.splice(index, 1);
+      }
+    }
   },
 };
 </script>
