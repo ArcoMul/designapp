@@ -1,5 +1,7 @@
 <template>
-  <div :class="{ item: true, selected }" :style="transpiledStyle" @click.stop.prevent @mousedown="onMousedown">
+  <div :class="{ item: true, selected }" :style="transpiledStyle"
+    @click.stop.prevent
+    @mousedown.stop.prevent="onMousedown">
     <div v-if="selected" class="handles">
       <Dragable class="top" @move="(x, y) => { move(0, y); resize(0, -y) }" />
       <Dragable class="top-right" @move="(x, y) => { move(0, y); resize(x, -y) }" />
@@ -31,17 +33,21 @@ export default {
     top: Number,
     width: Number,
     height: Number,
+    zoom: Number,
   },
   data() {
     return {
       style: {
-        border: '1px solid #000',
+        'border-width': 1,
+        'border-color': 'black',
+        'border-style': 'solid',
       },
     };
   },
   methods: {
     onMousedown() {
       this.$emit('select', this.id);
+      this.$emit('drag', this.id);
     },
     move(x, y) {
       this.$emit('move', this.id, x, y);
@@ -52,12 +58,14 @@ export default {
   },
   computed: {
     transpiledStyle() {
-      return Object.assign(this.style, {
-        left: `${this.left}px`,
-        top: `${this.top}px`,
-        width: `${this.width}px`,
-        height: `${this.height}px`,
+      console.log(this.style['border-width'], this.zoom, `${this.style['border-width'] * this.zoom}px`);
+      return Object.assign({}, this.style, {
+        left: `${this.left * this.zoom}px`,
+        top: `${this.top * this.zoom}px`,
+        width: `${this.width * this.zoom}px`,
+        height: `${this.height * this.zoom}px`,
         position: 'absolute',
+        'border-width': `${this.style['border-width'] * this.zoom}px`,
       });
     },
   }

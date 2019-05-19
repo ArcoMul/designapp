@@ -1,13 +1,14 @@
 <template>
   <div id="canvas"
-    @click="addDiv"
     @mousedown="onMousedown"
     @mouseup="onMouseup"
     @mousemove="onMousemove">
     <RectItem v-for="(item, index) in items"
       :key="index"
       v-bind="item"
+      :zoom="zoom"
       @select="onSelect"
+      @drag="onDrag"
       @move="onMove"
       @resize="onResize"
       />
@@ -32,6 +33,7 @@ export default {
       moveLastY: 0,
       mousedown: false,
       selected: null,
+      zoom: 1,
     };
   },
   created: function() {
@@ -41,15 +43,18 @@ export default {
     window.removeEventListener('keydown', this.onKeydown);
   },
   methods: {
-    addDiv() {
-      this.items.push({
+    addDiv({ left, top, width, height }) {
+      const item = {
         id: Math.random() + "",
         selected: false,
-        left: 100 * this.items.length,
-        top: 100,
-        width: 100,
-        height: 100,
-      });
+        left: left || 100 * this.items.length,
+        top: top || 100,
+        width: width || 100,
+        height: height || 100,
+        isBeingDrawn: true,
+      };
+      this.items.push(item);
+      return item;
     },
     onMove(id, x, y) {
       const item = this.items.filter(i => i.id === id)[0];
@@ -69,20 +74,44 @@ export default {
       item.selected = true;
       this.selected = item;
     },
+    onDrag(id) {
+      if (this.dragging) {
+        this.dragging = null;
+      }
+      console.log('onDrag');
+      const item = this.items.filter(i => i.id === id)[0];
+      this.dragging = item;
+    },
     onMousedown(ev) {
-      this.moveLastX = ev.clientX;
-      this.moveLastY = ev.clientY;
+      console.log(ev);
+      const { layerX: x, layerY: y, clientX, clientY } = ev;
+      this.moveLastX = clientX;
+      this.moveLastY = clientY;
       this.mousedown = true;
+
+      if (this.selected) {
+        this.selected.selected = false;
+        this.selected = null;
+      } else {
+        this.drawing = this.addDiv({ left: x, top: y, width: 1, height: 1 });
+      }
     },
     onMouseup(ev) {
       this.mousedown = false;
+      this.drawing = null;
+      this.dragging = null;
     },
     onMousemove(ev) {
-      if (!this.mousedown || !this.selected) {
+      if (!this.mousedown || (!this.dragging && !this.drawing)) {
         return;
       }
-      this.selected.left += ev.clientX - this.moveLastX;
-      this.selected.top += ev.clientY - this.moveLastY;
+      if (this.dragging) {
+        this.dragging.left += ev.clientX - this.moveLastX;
+        this.dragging.top += ev.clientY - this.moveLastY;
+      } else {
+        this.drawing.width += ev.clientX - this.moveLastX;
+        this.drawing.height += ev.clientY - this.moveLastY;
+      }
       this.moveLastX = ev.clientX;
       this.moveLastY = ev.clientY;
     },
@@ -90,6 +119,12 @@ export default {
       if (ev.key === 'Delete') {
         const index = this.items.indexOf(this.selected);
         this.items.splice(index, 1);
+      }
+      if (ev.key === '+' || ev.key === '=') {
+        this.zoom += 0.1;
+      }
+      if (ev.key === '-') {
+        this.zoom -= 0.1;
       }
     }
   },
